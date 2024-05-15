@@ -1,7 +1,6 @@
-#include <Arduino.h>
-#include "FastIMU.h"
 #include <Wire.h>
-
+#include "FastIMU.h"
+#include <Arduino.h>
 #define IMU_ADDRESS 0x68    //Change to the address of the IMU
 #define PERFORM_CALIBRATION //Comment to disable startup calibration
 MPU6500 IMU;               //Change to the name of any supported IMU! 
@@ -18,7 +17,6 @@ void setup() {
   Wire.setClock(400000); //400khz clock
   Serial.begin(115200);
   while (!Serial) {
-    ;
   }
 
   int err = IMU.init(calib, IMU_ADDRESS);
@@ -26,7 +24,6 @@ void setup() {
     Serial.print("Error initializing IMU: ");
     Serial.println(err);
     while (true) {
-      ;
     }
   }
   
