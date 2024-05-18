@@ -113,9 +113,10 @@ void setup() {
     delay(5000);
     IMU.init(calib, IMU_ADDRESS);
   #endif
+  // Configure gyro and accel errors to +-250 degrees/s and +-2 g
+  err = IMU.setGyroRange(250); 
+  err = IMU.setAccelRange(2);  
 
-  //err = IMU.setGyroRange(500);      //USE THESE TO SET THE RANGE, IF AN INVALID RANGE IS SET IT WILL RETURN -1
-  //err = IMU.setAccelRange(2);       //THESE TWO SET THE GYRO RANGE TO ±500 DPS AND THE ACCELEROMETER RANGE TO ±2g  
   if (err != 0) {
     Serial.print("Error Setting range: ");
     Serial.println(err);
@@ -148,7 +149,7 @@ void setup() {
       Serial.println("UNKNOWN");
   }
 
-  writeFile(SD, "/testing.csv", "Time,AccelX,AccelY,AccelZ,GyroX,GyroY,GyroZ");
+  writeFile(SD, "/testing.csv", "Time(ms),AccelX(g),AccelY(g),AccelZ(g),GyroX(d/s),GyroY(d/s),GyroZ(d/s)");
   appendFile(SD, "/testing.csv", "\n");
 }
 
