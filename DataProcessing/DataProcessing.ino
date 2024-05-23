@@ -7,7 +7,7 @@
 #include "SPI.h"
 
 #define IMU_ADDRESS 0x68    //Change to the address of the IMU
-//#define PERFORM_CALIBRATION //Comment to disable startup calibration
+#define PERFORM_CALIBRATION //Comment to disable startup calibration
 MPU6500 IMU;               //Change to the name of any supported IMU! 
 
 // Currently supported IMUS: MPU9255 MPU9250 MPU6886 MPU6500 MPU6050 ICM20689 ICM20690 BMI055 BMX055 BMI160 LSM6DS3 LSM6DSL QMI8658
@@ -17,6 +17,7 @@ AccelData accelData;    //Sensor data
 GyroData gyroData;
 MagData magData;
 
+#define rest_time_ms 1 // Rest time to use between data writes to SD card
 
 // SD card functions - from SD_Test esp32 SD library example.
 
@@ -42,13 +43,13 @@ void appendFile(fs::FS &fs, const char * path, const char * message){
 
     File file = fs.open(path, FILE_APPEND);
     if(!file){
-        Serial.println("Failed to open file for appending");
+        Serial.print("F");
         return;
     }
     if(file.print(message)){
-        Serial.println("OK");
+        Serial.print(".");
     } else {
-        Serial.println("None");
+        Serial.print("X");
     }
     file.close();
 }
@@ -149,8 +150,12 @@ void setup() {
       Serial.println("UNKNOWN");
   }
 
-  writeFile(SD, "/testing.csv", "Time(ms),AccelX(g),AccelY(g),AccelZ(g),GyroX(d/s),GyroY(d/s),GyroZ(d/s)");
+  
+
+  writeFile(SD, "/testing.csv", "Time(ms)\tAccelX(g)\tAccelY(g)\tAccelZ(g)\tGyroX(d/s)\tGyroY(d/s)\tGyroZ(d/s)");
   appendFile(SD, "/testing.csv", "\n");
+  Serial.print("\n");
+  delay(2000);
 }
 
 void loop() {
@@ -158,32 +163,37 @@ void loop() {
   IMU.update();
   IMU.getAccel(&accelData);
   IMU.getGyro(&gyroData);
-
-  dtostrf(accelData.accelX, 6, 2, accelX);
-  dtostrf(accelData.accelY, 6, 2, accelY);
-  dtostrf(accelData.accelZ, 6, 2, accelZ);
-
-  dtostrf(gyroData.gyroX, 6, 2, gyroX);
-  dtostrf(gyroData.gyroY, 6, 2, gyroY);
-  dtostrf(gyroData.gyroZ, 6, 2, gyroZ);
-
-
   unsigned long elapsedTime = currentTime-startTime;
 
-  dtostrf(elapsedTime, 6, 2, timechar);
+  dtostrf(accelData.accelX, 4, 2, accelX);
+  dtostrf(accelData.accelY, 4, 2, accelY);
+  dtostrf(accelData.accelZ, 4, 2, accelZ);
+
+  dtostrf(gyroData.gyroX, 4, 2, gyroX);
+  dtostrf(gyroData.gyroY, 4, 2, gyroY);
+  dtostrf(gyroData.gyroZ, 4, 2, gyroZ);
+
+
+  dtostrf(elapsedTime, 6, 0, timechar);
 
   appendFile(SD, "/testing.csv", timechar);
-  appendFile(SD, "/testing.csv", ",");
+  appendFile(SD, "/testing.csv", "\t");
+
   appendFile(SD, "/testing.csv", accelX);
-  appendFile(SD, "/testing.csv", ",");
+  appendFile(SD, "/testing.csv", "\t");
   appendFile(SD, "/testing.csv", accelY);
-  appendFile(SD, "/testing.csv", ",");
+  appendFile(SD, "/testing.csv", "\t");
   appendFile(SD, "/testing.csv", accelZ);
-  appendFile(SD, "/testing.csv", ",");
+  appendFile(SD, "/testing.csv", "\t");
+  delay(rest_time_ms);
   appendFile(SD, "/testing.csv", gyroX);
-  appendFile(SD, "/testing.csv", ",");
+  appendFile(SD, "/testing.csv", "\t");
   appendFile(SD, "/testing.csv", gyroY);
-  appendFile(SD, "/testing.csv", ",");
+  appendFile(SD, "/testing.csv", "\t");
   appendFile(SD, "/testing.csv", gyroZ);
   appendFile(SD, "/testing.csv", "\n");
+  delay(rest_time_ms);
+  
+  Serial.print("\n");
+  
 }
